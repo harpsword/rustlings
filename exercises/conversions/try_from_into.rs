@@ -3,9 +3,9 @@
 // Basically, this is the same as From. The main difference is that this should return a Result type
 // instead of the target type itself.
 // You can read more about it at https://doc.rust-lang.org/std/convert/trait.TryFrom.html
-use std::convert::{TryFrom, TryInto};
+use std::{convert::{TryFrom, TryInto}, result::Result};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Default)]
 struct Color {
     red: u8,
     green: u8,
@@ -21,7 +21,6 @@ enum IntoColorError {
     IntConversion,
 }
 
-// I AM NOT DONE
 
 // Your task is to complete this implementation
 // and return an Ok result of inner type Color.
@@ -36,13 +35,30 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
     fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        let mut color = Color::default();
+        color.red = parse_u8(tuple.0)?;
+        color.green = parse_u8(tuple.1)?;
+        color.blue = parse_u8(tuple.2)?;
+        Ok(color)
     }
+}
+
+fn parse_u8(v: i16) -> std::result::Result<u8, IntoColorError> {
+    if v < 0 || v > 255 {
+        return Err(IntoColorError::IntConversion);
+    }
+    Ok(v as u8)
 }
 
 // Array implementation
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
     fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        let mut color = Color::default();
+        color.red = parse_u8(arr[0])?;
+        color.green = parse_u8(arr[1])?;
+        color.blue = parse_u8(arr[2])?;
+        Ok(color)
     }
 }
 
@@ -50,6 +66,14 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        if slice.len() != 3 {
+            return Err(IntoColorError::BadLen);
+        }
+        let mut color = Color::default();
+        color.red = parse_u8(slice[0])?;
+        color.green = parse_u8(slice[1])?;
+        color.blue = parse_u8(slice[2])?;
+        Ok(color) 
     }
 }
 
